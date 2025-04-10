@@ -3,15 +3,30 @@ from pydantic import BaseModel, Field
 
 class UserBase(BaseModel):
     name: str = Field(max_length=50)
-    age: int | None = Field(default=None)
-    tg_id: str = Field(max_length=255)
-    phone_number: str = Field(max_length=20)
-    id_role: int = Field(default=1)
+    age: int = Field(gt=12, le=100)
+    tg_id: str = Field()
+    phone_number: str = Field(20)
 
 
-class UserResponse(UserBase):
-    id: int
+class CartBase(BaseModel):
+    user_id: int = Field()
 
 
-class UserRoleUpdate(BaseModel):
-    id_role: int = Field(ge=1, description="ID of the new role (1-user, 2-manager, 3-admin)")
+class SizeBase(BaseModel):
+    name: str
+    mult: float
+
+
+class CartProductBase(BaseModel):
+    product_id: int
+    quantity: int = Field(default=1)
+    size_id: int
+
+
+class BonusCardBase(BaseModel):
+    balance: int = Field(default=0)
+    user_id: int = Field()
+
+
+class Roles(BaseModel):
+    name: str = Field(max_length=50)

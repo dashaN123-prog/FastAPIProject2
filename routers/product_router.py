@@ -44,21 +44,12 @@ def create_new_product(data: ProductBase, db: Session = Depends(get_db)):
 #     return JSONResponse(content={"message": "Prod created succ"}, status_code=status.HTTP_201_CREATED)
 
 
-
-@router.delete("/{category_name}/{product_name}")
-async def delete_products(
-        category_name: str,
-        product_name: str,
-        db: Session = Depends(get_db)):
-    result = delete_product(db, category_name, product_name)
-
-    if result is False:
-        return JSONResponse(content={"message": "Category not found"},status_code=status.HTTP_404_NOT_FOUND)
-    elif result is None:
-        return JSONResponse(content={"message": "Product not found in this category"},status_code=status.HTTP_404_NOT_FOUND)
-
-    return JSONResponse(content={"message": "Product deleted successfully"},status_code=status.HTTP_200_OK)
-
+@router.delete("/{name}")
+async def del_products(name, db: Session = Depends(get_db)):
+    if delete_product(db, name):
+        return JSONResponse(content={"message": "Prod deleted succ"}, status_code=status.HTTP_200_OK)
+    else:
+        return JSONResponse(content={"message": "Prod not found"}, status_code=status.HTTP_404_NOT_FOUND)
 
 
 @router.patch("/{name}")

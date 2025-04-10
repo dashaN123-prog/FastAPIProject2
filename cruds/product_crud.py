@@ -25,20 +25,14 @@ def get_one_category_products(db: Session, category_name: str):
 #     db.commit()
 
 
-def delete_product(db: Session, category_name: str, product_name: str):
-    category = db.query(Category).filter_by(name=category_name).first()
-    if category is None:
-        return False
-
-    product = db.query(Product).filter(Product.name == product_name,Product.category_id == category.id).first()
-
+def delete_product(db: Session, product_name: str):
+    product = db.query(Product).filter(Product.name == product_name).first()
     if product is None:
-        return None
-
-    db.delete(product)
-    db.commit()
-    return True
-
+        return False
+    else:
+        db.delete(product)
+        db.commit()
+        return True
 
 
 def add_product(db: Session, data: ProductBase):

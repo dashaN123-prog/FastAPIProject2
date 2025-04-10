@@ -1,55 +1,58 @@
-from fastapi import APIRouter, Depends, Body, HTTPException
-from sqlalchemy.orm import Session
+from typing import Optional
+
+from fastapi import APIRouter, Query
+from fastapi.encoders import jsonable_encoder
+from fastapi.params import Depends
+from fastapi import FastAPI, Body
 from starlette import status
 from starlette.responses import JSONResponse
 
+from cruds.admin_crud import set_user_role
+from cruds.product_crud import get_product_by_name
+from cruds.user_crud import get_users, get_user_by_name, add_user, update_user, delete_user
 from database import get_db
-from cruds.user_crud import (get_users, get_user_by_id, get_user_by_tg_id,
-                             create_user, delete_user, update_user_role)
-from schemas.user_schema import UserBase, UserResponse, UserRoleUpdate
+from sqlalchemy.orm import Session
 
-router = APIRouter(prefix="/api/users", tags=["users"])
+from schemas.product_schema import ProductBase
+from schemas.user_schema import UserBase
+
+router = APIRouter(prefix='/api/users', tags=["users"])
 
 
 @router.get("/")
-async def get_all_users(db: Session = Depends(get_db)):
+def user_get(name: Optional[str] = Query(None), db: Session = Depends(get_db)):
+    if name:
+        return get_user_by_name(db, name)
     return get_users(db)
 
 
-@router.get("/{user_id}")
-async def get_user(user_id: int, db: Session = Depends(get_db)):
-    user = get_user_by_id(db, user_id)
-    if user is False:
-        return JSONResponse(content={"message": "User not found"},status_code=status.HTTP_404_NOT_FOUND)
-    return user
+@router.post('/')
+def create_new_user(data: UserBase, db: Session = Depends(get_db)):
+    add_user(db, data)
+    return JSONResponse(content={"message": "User created succ"}, status_code=status.HTTP_201_CREATED)
 
 
-@router.post("/")
-async def create_new_user(data: UserBase, db: Session = Depends(get_db)):
-    try:
-        user = create_user(db, data.dict())
-        return JSONResponse(content={"message": "User created successfully", "id": user.id},status_code=status.HTTP_201_CREATED)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail=str(e))
+@router.patch("/{name}")
+def update_products(name: str, data: UserBase, db: Session = Depends(get_db)):
+    user = update_user(db, name, data)
+    if user is None:
+        return JSONResponse(content={"message": "Prod not found"}, status_code=status.HTTP_404_NOT_FOUND)
+    else:
+        j = jsonable_encoder(user)
+        return JSONResponse(content=j, status_code=status.HTTP_200_OK)
 
 
-@router.delete("/{user_id}")
-async def delete_existing_user(user_id: int, db: Session = Depends(get_db)):
-    if delete_user(db, user_id):
-        return JSONResponse(content={"message": "User deleted successfully"},status_code=status.HTTP_200_OK)
-    return JSONResponse(content={"message": "User not found"},status_code=status.HTTP_404_NOT_FOUND)
+@router.delete("/{id}")
+async def del_user(id, db: Session = Depends(get_db)):
+    if delete_user(db, id):
+        return JSONResponse(content={"message": "Prod deleted succ"}, status_code=status.HTTP_200_OK)
+    else:
+        return JSONResponse(content={"message": "Prod not found"}, status_code=status.HTTP_404_NOT_FOUND)
 
 
-@router.patch("/{user_id}/role")
-async def update_user_role_endpoint(
-        user_id: int,
-        data: UserRoleUpdate,
-        db: Session = Depends(get_db)):
-    result = update_user_role(db, user_id, data.id_role)
-
-    if result is False:
-        return JSONResponse(content={"message": "User not found"},status_code=status.HTTP_404_NOT_FOUND)
-    if result is None:
-        return JSONResponse(content={"message": "Role not found"},status_code=status.HTTP_404_NOT_FOUND)
-
-    return JSONResponse(content={"message": "Role updated successfully"},status_code=status.HTTP_200_OK)
+@router.patch("/admin/{phone_number}")
+def change_role(phone_number: str, new_role_id: int = Body(embed=True), db: Session = Depends(get_db)):
+    if set_user_role(db, phone_number, new_role_id):
+        return JSONResponse(content={"message": "Role updated"}, status_code=status.HTTP_200_OK)
+    else:
+        return JSONResponse(content={"message": "No user found"}, status_code=status.HTTP_404_NOT_FOUND)
