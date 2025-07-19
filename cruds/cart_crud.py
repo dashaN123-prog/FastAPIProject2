@@ -79,7 +79,7 @@ def del_all_prod_from_cart(user_id: int, db: Session):
     db.commit()
 
 
-def del_product_from_cart(user_id: int, product_id: int, db: Session):
+def del_product_from_cart(user_id: int, product_id: int, size_name: str, db: Session):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(404, "User not found")
@@ -88,12 +88,18 @@ def del_product_from_cart(user_id: int, product_id: int, db: Session):
     if not cart:
         raise HTTPException(404, "Cart not found")
 
+    size = db.query(Size).filter(Size.name == size_name).first()
+    if not size:
+        raise HTTPException(404, "Size not found")
+
     cart_prod = db.query(CartProduct).filter(
         CartProduct.cart_id == cart.id,
-        CartProduct.product_id == product_id
+        CartProduct.product_id == product_id,
+        CartProduct.size_id == size.id
     ).first()
     if not cart_prod:
         raise HTTPException(404, "Product not in cart")
 
     db.delete(cart_prod)
     db.commit()
+

@@ -44,7 +44,8 @@ def del_cart_prods(user_id: int, db: Session = Depends(get_db)):
 def delete_product_from_cart(
     user_id: int,
     product_id: int,
+    size: str = Body(...),
     db: Session = Depends(get_db)
 ):
-    del_product_from_cart(user_id, product_id, db)
+    del_product_from_cart(user_id, product_id, size, db)
     return JSONResponse(content={"message": "Product deleted"}, status_code=status.HTTP_200_OK)
