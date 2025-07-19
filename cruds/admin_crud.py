@@ -1,7 +1,7 @@
-from fastapi import Body
 from sqlalchemy.orm import Session
-from models.category_model import Category, Product, User, Cart, CartProduct, BonusCard, Role
-from schemas.user_schema import UserBase, Roles
+from sqlalchemy.orm import Session
+
+from models.category_model import User, Role
 
 
 def set_user_role(db: Session, phone_number, new_role_id):

@@ -1,20 +1,18 @@
 from typing import Optional
 
 from fastapi import APIRouter, Query
+from fastapi import Body
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Depends
-from fastapi import FastAPI, Body
+from sqlalchemy.orm import Session
 from starlette import status
 from starlette.responses import JSONResponse
 
 from cruds.admin_crud import set_user_role
-from cruds.product_crud import get_product_by_name
 from cruds.user_crud import get_users, get_user_by_name, add_user, update_user, delete_user
 from database import get_db
-from sqlalchemy.orm import Session
-
-from schemas.product_schema import ProductBase
 from schemas.user_schema import UserBase
+
 
 router = APIRouter(prefix='/api/users', tags=["users"])
 
@@ -28,8 +26,8 @@ def user_get(name: Optional[str] = Query(None), db: Session = Depends(get_db)):
 
 @router.post('/')
 def create_new_user(data: UserBase, db: Session = Depends(get_db)):
-    add_user(db, data)
-    return JSONResponse(content={"message": "User created succ"}, status_code=status.HTTP_201_CREATED)
+    user=jsonable_encoder(add_user(db, data))
+    return JSONResponse(content=user, status_code=status.HTTP_201_CREATED)
 
 
 @router.patch("/{name}")
@@ -56,3 +54,6 @@ def change_role(phone_number: str, new_role_id: int = Body(embed=True), db: Sess
         return JSONResponse(content={"message": "Role updated"}, status_code=status.HTTP_200_OK)
     else:
         return JSONResponse(content={"message": "No user found"}, status_code=status.HTTP_404_NOT_FOUND)
+
+
+

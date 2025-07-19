@@ -1,5 +1,5 @@
-from fastapi import Body
 from sqlalchemy.orm import Session
+
 from models.category_model import Category, Product
 from schemas.product_schema import ProductBase
 

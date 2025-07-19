@@ -1,7 +1,7 @@
+from environs import Env
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from environs import Env
 
 env = Env()
 env.read_env()

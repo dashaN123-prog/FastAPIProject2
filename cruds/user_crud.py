@@ -1,6 +1,7 @@
-from fastapi import Body
 from sqlalchemy.orm import Session
-from models.category_model import Category, Product, User, Cart, CartProduct, BonusCard
+from sqlalchemy.orm import Session
+
+from models.category_model import User, Cart, BonusCard
 from schemas.user_schema import UserBase
 
 
@@ -25,6 +26,7 @@ def add_user(db: Session, data: UserBase):
     db.commit()
     db.refresh(new_user)
     db.close()
+    return new_user
 
 
 def update_user(db: Session, name: str, data: UserBase):

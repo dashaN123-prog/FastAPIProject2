@@ -3,15 +3,13 @@ from typing import Optional
 from fastapi import APIRouter, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Depends
-from fastapi import FastAPI, Body
+from sqlalchemy.orm import Session
 from starlette import status
 from starlette.responses import JSONResponse
 
-from database import get_db
 from cruds.product_crud import get_products, get_one_category_products, add_product, delete_product, update_product, \
     get_product_by_name
-from sqlalchemy.orm import Session
-
+from database import get_db
 from schemas.product_schema import ProductBase
 
 router = APIRouter(prefix='/api/products', tags=["products"])
