@@ -3,32 +3,26 @@ from fastapi import HTTPException
 from models.category_model import Product, User, Cart, CartProduct, Size
 
 def get_all_products(user_id: int, db: Session):
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    cart = db.query(Cart).filter(Cart.user_id == user.id).first()
+    cart = db.query(Cart).filter(Cart.user_id == user_id).first()
     if not cart:
         return []
 
-    results = (db.query(Product, Size, CartProduct)
-               .join(CartProduct, CartProduct.product_id == Product.id)
-               .join(Size, Size.id == CartProduct.size_id)
-               .filter(CartProduct.cart_id == cart.id)
-               .all())
+    products = (
+        db.query(
+            Product.name.label("product_name"),
+            Product.price.label("product_price"),
+            Size.name.label("size"),
+            Size.multiplier.label("size_mult"),
+            CartProduct.quantity,
+            Product.id.label("product_id")
+        )
+        .join(CartProduct, CartProduct.product_id == Product.id)
+        .join(Size, Size.id == CartProduct.size_id)
+        .filter(CartProduct.cart_id == cart.id)
+        .all()
+    )
 
-    products_list = []
-    for product, size, cartprod in results:
-        products_list.append({
-            "product_name": product.name,
-            "product_id": product.id,
-            "product_price": product.price,
-            "quantity": cartprod.quantity,
-            "size": size.name,
-            "size_mult": size.mult
-        })
-
-    return products_list
+    return products
 
 
 def add_product_to_cart(user_id: int, product_id: int, quantity: int, size_name: str, db: Session):
