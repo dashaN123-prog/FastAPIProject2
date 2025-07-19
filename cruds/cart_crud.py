@@ -4,6 +4,7 @@ from models.category_model import Product, User, Cart, CartProduct, Size
 
 def get_all_products(user_id: int, db: Session):
     cart = db.query(Cart).filter(Cart.user_id == user_id).first()
+
     if not cart:
         return []
 
