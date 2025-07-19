@@ -84,22 +84,21 @@ def del_all_prod_from_cart(user_id: int, db: Session):
     db.commit()
 
 
-def del_product_from_cart(user_id: int, product_id: int, db: Session) -> bool:
+def del_product_from_cart(user_id: int, product_id: int, db: Session):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        return False
-    cart = db.query(Cart).filter(Cart.user_id == user.id).first()
-    if not cart:
-        return False
+        raise HTTPException(404, "User not found")
 
-    cart_product = db.query(CartProduct).filter(
+    cart = db.query(Cart).filter(Cart.user_id == user_id).first()
+    if not cart:
+        raise HTTPException(404, "Cart not found")
+
+    cart_prod = db.query(CartProduct).filter(
         CartProduct.cart_id == cart.id,
         CartProduct.product_id == product_id
     ).first()
+    if not cart_prod:
+        raise HTTPException(404, "Product not in cart")
 
-    if not cart_product:
-        return False
-
-    db.delete(cart_product)
+    db.delete(cart_prod)
     db.commit()
-    return True

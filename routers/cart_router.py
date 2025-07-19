@@ -4,14 +4,13 @@ from sqlalchemy.orm import Session
 from starlette import status
 from starlette.responses import JSONResponse
 
-from database import get_db  # твоя функция для сессии
-from cruds.cart_crud import del_product_from_cart  # функция удаления из crud
 
+from database import get_db
 from cruds.cart_crud import (
     get_all_products,
     add_product_to_cart,
     del_all_prod_from_cart,
-    del_product_from_cart,
+    del_product_from_cart
 )
 from database import get_db
 
@@ -42,8 +41,10 @@ def del_cart_prods(user_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/{user_id}/product/{product_id}")
-def delete_product_from_cart(user_id: int, product_id: int, db: Session = Depends(get_db)):
-    success = del_product_from_cart(user_id, product_id, db)
-    if not success:
-        raise HTTPException(status_code=404, detail="Product not found in cart")
-    return {"detail": "Product deleted"}
+def delete_product_from_cart(
+    user_id: int,
+    product_id: int,
+    db: Session = Depends(get_db)
+):
+    del_product_from_cart(user_id, product_id, db)
+    return JSONResponse(content={"message": "Product deleted"}, status_code=status.HTTP_200_OK)
