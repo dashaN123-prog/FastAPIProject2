@@ -30,3 +30,17 @@ class BonusCardBase(BaseModel):
 
 class Roles(BaseModel):
     name: str = Field(max_length=50)
+
+
+
+class CartProductResponse(BaseModel):
+    product_id: int
+    product_name: str
+    product_price: int
+    quantity: int
+    size: str
+    size_mult: float
+    size_id: int
+
+    class Config:
+        orm_mode = True
